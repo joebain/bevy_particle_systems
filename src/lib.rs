@@ -65,7 +65,7 @@ pub mod values;
 use bevy_app::prelude::{App, Plugin};
 pub use components::*;
 use systems::{
-    partcle_spawner, particle_cleanup, particle_color, particle_lifetime, particle_transform,
+    partcle_spawner, particle_cleanup, /*particle_color, */particle_lifetime, particle_transform,
 };
 pub use values::*;
 
@@ -93,7 +93,7 @@ impl Plugin for ParticleSystemPlugin {
     fn build(&self, app: &mut App) {
         app.add_system(partcle_spawner)
             .add_system(particle_lifetime)
-            .add_system(particle_color)
+            //.add_system(particle_color)
             .add_system(particle_transform)
             .add_system(particle_cleanup)
             .register_type::<ParticleSystem>()

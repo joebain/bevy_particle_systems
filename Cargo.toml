@@ -21,6 +21,7 @@ bevy_sprite = "0.9"
 bevy_time = "0.9"
 bevy_transform = "0.9"
 bevy_reflect = "0.9"
+bevy_pbr = "0.9"
 rand = "0.8"
 
 [dev-dependencies]

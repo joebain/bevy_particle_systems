@@ -1,9 +1,17 @@
 use bevy_ecs::prelude::{Commands, Entity, Query, Res, With};
 use bevy_hierarchy::BuildChildren;
-use bevy_math::Vec3;
+use bevy_math::{Vec3, Vec2};
 use bevy_sprite::prelude::{Sprite, SpriteBundle};
 use bevy_time::Time;
 use bevy_transform::prelude::{GlobalTransform, Transform};
+use bevy_pbr::StandardMaterial;
+use bevy_pbr::AlphaMode;
+use bevy_pbr::MaterialMeshBundle;
+use bevy_pbr::Material;
+use bevy_render::mesh::*;
+use bevy_asset::Handle;
+use bevy_ecs::prelude::ResMut;
+use bevy_asset::Assets;
 use rand::prelude::*;
 
 use crate::{
@@ -35,6 +43,8 @@ pub fn partcle_spawner(
         With<Playing>,
     >,
     time: Res<Time>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut commands: Commands,
 ) {
     let mut rng = rand::thread_rng();
@@ -149,7 +159,19 @@ pub fn partcle_spawner(
                             ),
                             ..ParticleBundle::default()
                         })
-                        .insert(SpriteBundle {
+                        .insert(MaterialMeshBundle {
+                            mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(1.0,1.0)))),
+                            material: materials.add(StandardMaterial {
+                                base_color_texture: Some(particle_system.default_sprite.clone()),
+                                base_color: particle_system.color.at_lifetime_pct(0.0),
+                                alpha_mode: AlphaMode::Blend,
+                                unlit: true,
+                                ..StandardMaterial::default()
+                            }),
+                            transform: spawn_point,
+                            ..MaterialMeshBundle::default()
+                        });
+                        /*.insert(SpriteBundle {
                             sprite: Sprite {
                                 color: particle_system.color.at_lifetime_pct(0.0),
                                 ..Sprite::default()
@@ -157,7 +179,7 @@ pub fn partcle_spawner(
                             transform: spawn_point,
                             texture: particle_system.default_sprite.clone(),
                             ..SpriteBundle::default()
-                        });
+                        });*/
                 }
                 ParticleSpace::Local => {
                     commands.entity(entity).with_children(|parent| {
@@ -181,6 +203,19 @@ pub fn partcle_spawner(
                                 ),
                                 ..ParticleBundle::default()
                             })
+                            .insert(MaterialMeshBundle {
+                                mesh: meshes.add(Mesh::from(shape::Quad::new(Vec2::new(1.0,1.0)))),
+                                material: materials.add(StandardMaterial {
+                                    base_color_texture: Some(particle_system.default_sprite.clone()),
+                                    base_color: particle_system.color.at_lifetime_pct(0.0),
+                                    alpha_mode: AlphaMode::Blend,
+                                    unlit: true,
+                                    ..StandardMaterial::default()
+                                }),
+                                transform: spawn_point,
+                                ..MaterialMeshBundle::default()
+                            });
+                            /*
                             .insert(SpriteBundle {
                                 sprite: Sprite {
                                     color: particle_system.color.at_lifetime_pct(0.0),
@@ -190,6 +225,7 @@ pub fn partcle_spawner(
                                 texture: particle_system.default_sprite.clone(),
                                 ..SpriteBundle::default()
                             });
+                            */
                     });
                 }
             }
@@ -213,17 +249,19 @@ pub(crate) fn particle_lifetime(
     });
 }
 
-pub(crate) fn particle_color(mut particle_query: Query<(&Particle, &Lifetime, &mut Sprite)>) {
-    particle_query.par_for_each_mut(512, |(particle, lifetime, mut sprite)| {
-        match &particle.color {
-            ColorOverTime::Constant(color) => sprite.color = *color,
-            ColorOverTime::Gradient(gradient) => {
-                let pct = lifetime.0 / particle.max_lifetime;
-                sprite.color = gradient.get_color(pct);
-            }
-        }
-    });
-}
+// pub(crate) fn particle_color(mut particle_query: Query<(&Particle, &Lifetime, &mut Handle<StandardMaterial>)>, mut materials: ResMut<Assets<StandardMaterial>>) {
+//     particle_query.par_for_each_mut(512, |(particle, lifetime, mut mat)| {
+//         if let Some(mat) = materials.get(&mat) {
+//             match &particle.color {
+//                 ColorOverTime::Constant(color) => mat.base_color = *color,
+//                 ColorOverTime::Gradient(gradient) => {
+//                     let pct = lifetime.0 / particle.max_lifetime;
+//                     mat.base_color = gradient.get_color(pct);
+//                 }
+//             }
+//         }
+//     });
+// }
 
 pub(crate) fn particle_transform(
     mut particle_query: Query<(
