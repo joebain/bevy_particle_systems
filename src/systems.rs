@@ -126,15 +126,18 @@ pub fn partcle_spawner(
                 ParticleSpace::Local => Transform::default(),
                 ParticleSpace::World => Transform::from(*global_transform),
             };
+            
             let radian: f32 = rng.gen_range(-0.5..0.5) * particle_system.emitter_shape
                 + particle_system.emitter_angle;
             let direction = Vec3::new(radian.cos(), radian.sin(), 0.0);
 
             spawn_point.translation += direction * particle_system.spawn_radius.get_value(&mut rng);
+            /*
             spawn_point.translation.z = particle_system
                 .z_value_override
                 .as_ref()
                 .map_or(0.0, |jittered_value| jittered_value.get_value(&mut rng));
+            */
             let particle_scale = particle_system.scale.at_lifetime_pct(0.0);
             spawn_point.scale = Vec3::new(particle_scale, particle_scale, particle_scale);
 
